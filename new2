@@ -1,3 +1,5 @@
+getgenv().Obfuscater = true
+
 if getgenv().Obfuscater == true then
 if game.PlaceId == 5602055394 then
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/Splix"))()
@@ -25,7 +27,7 @@ local esp = VisualsTab:section({name = "Player Visuals",side = "left",size = 85}
 local client = VisualsTab:section({name = "Client Sided",side = "right",size = 100})
 ----------
 --MiscTab--
-local misc1 = MiscTab:section({name = "Auto-Buy",side = "left",size = 100})
+local misc1 = MiscTab:section({name = "Auto-Buy",side = "left",size = 125})
 local misc2 = MiscTab:section({name = "Streak",side = "right",size = 255})
 local target = MiscTab:section({name = "Targeting",side = "left",size = 65})
 local misc3 = MiscTab:section({name = "World",side = "right",size = 100})
@@ -38,6 +40,7 @@ local discord = SettingsTab:section({name = "Discord",side = "right",size = 76})
 
 --AimLock Scripts--
 aim:button({name = "Lock (Q)",callback = function()
+ 
 local Settings = {
     AimLock = {
         Enabled = true,
@@ -865,7 +868,7 @@ end)
 game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.5
 wait(0.5)
 game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-1229.43945, 333.783966, -514.504639, 0.15644598, -6.56401025e-05, -0.987686574, 6.56401025e-05, 1, -5.60612789e-05, 0.987686574, -5.60612789e-05, 0.15644598)
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Armor["[High Armor] - $550"].Head.CFrame * CFrame.new(0,-5,0)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Armor["[High Armor] - $550"].Head.CFrame * CFrame.new(0,-1,0)
 wait(0.3)
 fireclickdetector(game:GetService("Workspace").Ignored.Shop.Armor["[High Armor] - $550"].ClickDetector)
 
@@ -997,19 +1000,70 @@ local item3 = "[Hamburger] - $5"
 getgenv().other2 = true
 game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.5
 wait(0.5)
-game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-295.636627, 333.13089, -88.8177109, 0, 0, 1, 0, 1, -0, -1, 0, 0)
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Others["[Chicken] - $5"].Head.CFrame * CFrame.new(0,-1,0)
+game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-260.709961, 328.648071, -604.193481, -1, 0, 0, 0, 1, 0, 0, 0, -1)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Others["[Hamburger] - $5"].Head.CFrame * CFrame.new(0,-1,0)
 wait(0.3)
 
-fireclickdetector(game:GetService("Workspace").Ignored.Shop.Others["[Chicken] - $5"].ClickDetector)
+fireclickdetector(game:GetService("Workspace").Ignored.Shop.Others["[Hamburger] - $5"].ClickDetector)
 wait(0.4)
 
 p1.CFrame = pos
 
 game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2
 wait(0.5)
-getgenv().other2 = false
+getgenv().other3 = false
 end})
+
+
+misc1:button({name = "Food, Armor",callback = function()
+local p1 = game.Players.LocalPlayer.Character.HumanoidRootPart
+local item1 = "[Hamburger] - $5"
+local pos = p1.CFrame
+
+getgenv().other3 = true 
+
+game:GetService("RunService").heartbeat:Connect(function()
+    if getgenv().other3 == true then 
+    local abc = game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0,-1000,0)
+    game:GetService("RunService").RenderStepped:Wait()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = abc
+    end
+end)
+
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.5
+wait(0.5)
+game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-260.709961, 328.648071, -604.193481, -1, 0, 0, 0, 1, 0, 0, 0, -1)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Others["[Hamburger] - $5"].Head.CFrame * CFrame.new(0,-1,0)
+wait(0.3)
+
+fireclickdetector(game:GetService("Workspace").Ignored.Shop.Others["[Hamburger] - $5"].ClickDetector)
+wait(0.4)
+
+p1.CFrame = pos
+
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2
+wait(0.5)
+getgenv().other3 = false
+wait(1)
+local item2 = "[High Armor] - $550"
+getgenv().other3 = true
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.5
+wait(0.5)
+game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-1229.43945, 333.783966, -514.504639, 0.15644598, -6.56401025e-05, -0.987686574, 6.56401025e-05, 1, -5.60612789e-05, 0.987686574, -5.60612789e-05, 0.15644598)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Armor["[High Armor] - $550"].Head.CFrame * CFrame.new(0,-1,0)
+wait(0.3)
+fireclickdetector(game:GetService("Workspace").Ignored.Shop.Armor["[High Armor] - $550"].ClickDetector)
+
+wait(0.4)
+p1.CFrame = pos
+
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2
+wait(0.5)
+getgenv().other3 = false
+end})
+
+
 
 local tagtable = {}
 
