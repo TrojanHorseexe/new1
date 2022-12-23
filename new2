@@ -1,0 +1,1068 @@
+if game.PlaceId == 5602055394 then
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/Splix"))()
+
+local window = library:new({textsize = 13.5,font = Enum.Font.RobotoMono,name = "Security | Hood Modded",color = Color3.fromRGB(25, 240, 100)})
+
+local AimTab = window:page({name = "Aim"})
+local PlayerTab = window:page({name = "Player"})
+local VisualsTab = window:page({name = "Visuals"})
+local MiscTab = window:page({name = "Misc"})
+local SettingsTab = window:page({name = "Settings"})
+
+--AimTab--
+local aim = AimTab:section({name = "AimLock",side = "left",size = 50})
+----------
+--PlayerTab--
+local playerspeed = PlayerTab:section({name = "Speed Control",side = "left",size = 50})
+local playerjump = PlayerTab:section({name = "Jump Control",side = "left",size = 105})
+local playercframe = PlayerTab:section({name = "CFrame Control",side = "right",size = 85})
+local playerantis = PlayerTab:section({name = "Antis",side = "right",size = 100})
+local playerother = PlayerTab:section({name = "Player Things",side = "right",size = 75})
+----------
+--VisualsTab--
+local esp = VisualsTab:section({name = "Player Visuals",side = "left",size = 85})
+local client = VisualsTab:section({name = "Client Sided",side = "right",size = 100})
+----------
+--MiscTab--
+local misc1 = MiscTab:section({name = "Auto-Buy",side = "left",size = 100})
+local misc2 = MiscTab:section({name = "Streak",side = "right",size = 255})
+local target = MiscTab:section({name = "Targeting",side = "left",size = 65})
+local misc3 = MiscTab:section({name = "World",side = "right",size = 100})
+----------
+--SettingsTab--
+local ui = SettingsTab:section({name = "UI",side = "left",size = 50})
+local Configs = SettingsTab:section({name = "Side",side = "right",size = 60})
+local discord = SettingsTab:section({name = "Discord",side = "right",size = 76})
+----------
+
+--AimLock Scripts--
+aim:button({name = "Lock (Q)",callback = function()
+local Settings = {
+    AimLock = {
+        Enabled = true,
+        Aimlockkey = "q",
+        Prediction = 0.100340,
+        Aimpart = 'HumanoidRootPart',
+        Notifications = true
+    },
+    Settings = {
+        Thickness = 3.5,
+        Transparency = 1,
+        Color = Color3.fromRGB(255, 255, 255),
+        FOV = false
+    }
+
+}
+
+local CurrentCamera = game:GetService("Workspace").CurrentCamera
+local Inset = game:GetService("GuiService"):GetGuiInset().Y
+local RunService = game:GetService("RunService")
+
+local Mouse = game.Players.LocalPlayer:GetMouse()
+local LocalPlayer = game.Players.LocalPlayer
+
+local Line = Drawing.new("Line")
+local Circle = Drawing.new("Circle")
+
+local Plr = game.Players.LocalPlayer
+
+Mouse.KeyDown:Connect(function(KeyPressed)
+    if KeyPressed == (Settings.AimLock.Aimlockkey) then
+        if Settings.AimLock.Enabled == true then
+            Settings.AimLock.Enabled = false
+            if Settings.AimLock.Notifications == true then
+                Plr = FindClosestPlayer()
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Lock",
+                    Text = "Unlocked"
+                })
+            end
+        else
+            Plr = FindClosestPlayer()
+            Settings.AimLock.Enabled = true
+            if Settings.AimLock.Notifications == true then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Lock",
+                    Text = "Locked:  " .. tostring(Plr.Character.Humanoid.DisplayName)
+                })
+            end
+        end
+    end
+end)
+
+function FindClosestPlayer()
+    local ClosestDistance, ClosestPlayer = math.huge, nil;
+    for _, Player in next, game:GetService("Players"):GetPlayers() do
+        if Player ~= LocalPlayer then
+            local Character = Player.Character
+            if Character and Character.Humanoid.Health > 1 then 
+                local Position, IsVisibleOnViewPort = CurrentCamera:WorldToViewportPoint(Character.HumanoidRootPart
+                                                                                             .Position)
+                if IsVisibleOnViewPort then
+                    local Distance = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(Position.X, Position.Y)).Magnitude
+                    if Distance < ClosestDistance then
+                        ClosestPlayer = Player
+                        ClosestDistance = Distance
+                    end
+                end
+            end
+        end
+    end
+    return ClosestPlayer, ClosestDistance
+end
+
+RunService.Heartbeat:connect(function()
+    if Settings.AimLock.Enabled == true then
+        local Vector = CurrentCamera:WorldToViewportPoint(Plr.Character[Settings.AimLock.Aimpart].Position +
+                                                              (Plr.Character[Settings.AimLock.Aimpart].Velocity *
+                                                              Settings.AimLock.Prediction))
+        Line.Color = Settings.Settings.Color
+        Line.Transparency = Settings.Settings .Transparency
+        Line.Thickness = Settings.Settings .Thickness
+        Line.From = Vector2.new(Mouse.X, Mouse.Y + Inset)
+        Line.To = Vector2.new(Vector.X, Vector.Y)
+        Line.Visible = true
+        Circle.Position = Vector2.new(Mouse.X, Mouse.Y + Inset)
+        Circle.Visible = Settings.Settings.FOV
+        Circle.Thickness = 1.5
+        Circle.Thickness = 2
+        Circle.Radius = 60
+        Circle.Color = Settings.Settings.Color
+    elseif Settings.AimLock.FOV == true then
+        Circle.Visible = true
+    else
+        Circle.Visible = false
+        Line.Visible = false
+    end
+end)
+
+local mt = getrawmetatable(game)
+local old = mt.__namecall
+setreadonly(mt, false)
+mt.__namecall = newcclosure(function(...)
+    local args = {...}
+    if Settings.AimLock.Enabled and getnamecallmethod() == "FireServer" and args[2] == "MousePos" then
+        args[3] = Plr.Character[Settings.AimLock.Aimpart].Position +
+                      (Plr.Character[Settings.AimLock.Aimpart].Velocity * Settings.AimLock.Prediction)
+
+        return old(unpack(args))
+    end
+    return old(...)
+end)
+end})
+
+target:textbox({name = "Target",def = "Targets name here",placeholder = "Must be full name",callback = function(value)
+getgenv().target = true
+
+game:GetService("RunService").heartbeat:Connect(function()
+    if getgenv().target == true then 
+    local abc = game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0,-1000,0)
+    game:GetService("RunService").RenderStepped:Wait()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = abc
+    end
+end)
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.6
+wait(0.5)
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players[value].Character.HumanoidRootPart.CFrame * CFrame.new(0,0,3)
+wait(0.4)
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2
+getgenv().target = false
+GetPlayerByName()
+end})
+
+--PlayerTab Scripts--
+playerspeed:button({name = "Speed (C)",callback = function()
+   local Toggled = false
+   local KeyCode = 'c'
+        
+        
+    _G.Running = true
+        game:GetService('UserInputService').InputBegan:Connect(function(Key)
+        if Key.KeyCode == Enum.KeyCode[KeyCode:upper()] and not game:GetService('UserInputService'):GetFocusedTextBox() then
+            if Toggled then
+                    Toggled = false
+                        wait()
+                     _G.Running = false
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 0
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 0
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 0
+                    
+            elseif not Toggled then
+                   Toggled = true
+                   if Key.KeyCode == Enum.KeyCode[KeyCode:upper()] and not game:GetService('UserInputService'):GetFocusedTextBox() then
+                               _G.Running = true
+                               while _G.Running == true do
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 1
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 1
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 1
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 1
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 1
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 1
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 1
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 1
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 1
+                   wait()
+                        
+                                  end
+                        
+            
+                   
+            end
+           
+            end
+            end
+          
+             
+        end)
+end})
+
+playerjump:button({name = "Inf Jump",callback = function()
+    local Player = game:GetService'Players'.LocalPlayer;
+local UIS = game:GetService'UserInputService';
+
+_G.JumpHeight = 50
+
+function Action(Object, Function) if Object ~= nil then Function(Object); end end
+ 
+UIS.InputBegan:connect(function(UserInput)
+    if UserInput.UserInputType == Enum.UserInputType.Keyboard and UserInput.KeyCode == Enum.KeyCode.Space then
+        Action(Player.Character.Humanoid, function(self)
+            if self:GetState() == Enum.HumanoidStateType.Jumping or self:GetState() == Enum.HumanoidStateType.Freefall then
+                Action(self.Parent.HumanoidRootPart, function(self)
+                    self.Velocity = Vector3.new(0, _G.JumpHeight, 0);
+                end)
+            end
+        end)
+    end
+end)
+end})
+
+playerjump:slider({name = "Jump Height",def = 50, max = 250,min = 50,rounding = true,ticking = false,measuring = "",callback = function(value)
+   _G.JumpHeight = value
+end})
+playerjump:button({name = "No Jump Cooldown",callback = function()
+ if not game.IsLoaded(game) then 
+    game.Loaded.Wait(game.Loaded);
+end
+
+-- variables 
+local IsA = game.IsA;
+local newindex = nil 
+
+-- main hook
+newindex = hookmetamethod(game, "__newindex", function(self, Index, Value)
+    if not checkcaller() and IsA(self, "Humanoid") and Index == "JumpPower" then 
+        return
+    end
+    
+    return newindex(self, Index, Value);
+end)
+end})
+
+playercframe:button({name = "CFrame (X)",callback = function()
+       repeat
+        wait()
+    until game:IsLoaded()
+    local L_134_ = game:service('Players')
+    local L_135_ = L_134_.LocalPlayer
+    repeat
+        wait()
+    until L_135_.Character
+    local L_136_ = game:service('UserInputService')
+    local L_137_ = game:service('RunService')
+    getgenv().Multiplier = 3
+    local L_138_ = true
+    local L_139_
+    L_136_.InputBegan:connect(function(L_140_arg0)
+        if L_140_arg0.KeyCode == Enum.KeyCode.LeftBracket then
+            Multiplier = Multiplier + 0.01
+            print(Multiplier)
+            wait(0.2)
+            while L_136_:IsKeyDown(Enum.KeyCode.LeftBracket) do
+                wait()
+                Multiplier = Multiplier + 0.01
+                print(Multiplier)
+            end
+        end
+        if L_140_arg0.KeyCode == Enum.KeyCode.RightBracket then
+            Multiplier = Multiplier - 0.01
+            print(Multiplier)
+            wait(0.2)
+            while L_136_:IsKeyDown(Enum.KeyCode.RightBracket) do
+                wait()
+                Multiplier = Multiplier - 0.01
+                print(Multiplier)
+            end
+        end
+        if L_140_arg0.KeyCode == Enum.KeyCode.X then
+            L_138_ = not L_138_
+            if L_138_ == true then
+                repeat
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.Humanoid.MoveDirection * Multiplier
+                    game:GetService("RunService").Stepped:wait()
+                until L_138_ == false
+            end
+        end
+    end)
+db = false
+end})
+
+playercframe:slider({name = "CFrame Speed",def = 3, max = 3,min = 1,rounding = true,ticking = false,measuring = "",callback = function(value)
+   getgenv().Multiplier = value
+end})
+
+playerother:button({name = "ChatSpy",callback = function()
+   privateProperties = {
+	Color = Color3.fromRGB(0,255,255); 
+	Font = Enum.Font.SourceSansBold;
+	TextSize = 18;
+}
+local StarterGui = game:GetService("StarterGui")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local saymsg = game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest")
+local getmsg = game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("OnMessageDoneFiltering")
+local instance = (_G.chatSpyInstance or 0) + 1
+_G.chatSpyInstance = instance
+
+local function onChatted(p,msg)
+	if _G.chatSpyInstance == instance then
+		if p==player and msg:lower():sub(1,4)=="/spy" then
+			enabled = not enabled
+			wait(0.3)
+			StarterGui:SetCore("ChatMakeSystemMessage",privateProperties)
+		elseif enabled and (spyOnMyself==true or p~=player) then
+			msg = msg:gsub("[\n\r]",''):gsub("\t",' '):gsub("[ ]+",' ')
+			local hidden = true
+			local conn = getmsg.OnClientEvent:Connect(function(packet,channel)
+				if packet.SpeakerUserId==p.UserId and packet.Message==msg:sub(#msg-#packet.Message+1) and (channel=="All" or (channel=="Team" and public==false and Players[packet.FromSpeaker].Team==player.Team)) then
+					hidden = false
+				end
+			end)
+			wait(1)
+			conn:Disconnect()
+			if hidden and enabled then
+				if public then
+					saymsg:FireServer((publicItalics and "/me " or '').."Logged [".. p.Name .."]: "..msg,"All")
+				else
+					privateProperties.Text = "Logged [".. p.Name .."]: "..msg
+					StarterGui:SetCore("ChatMakeSystemMessage",privateProperties)
+				end
+			end
+		end
+	end
+end
+
+for _,p in ipairs(Players:GetPlayers()) do
+	p.Chatted:Connect(function(msg) onChatted(p,msg) end)
+end
+Players.PlayerAdded:Connect(function(p)
+	p.Chatted:Connect(function(msg) onChatted(p,msg) end)
+end)
+StarterGui:SetCore("ChatMakeSystemMessage",privateProperties)
+local chatFrame = player.PlayerGui.Chat.Frame
+chatFrame.ChatChannelParentFrame.Visible = true
+chatFrame.ChatBarParentFrame.Position = chatFrame.ChatChannelParentFrame.Position+UDim2.new(UDim.new(),chatFrame.ChatChannelParentFrame.Size.Y)
+end})
+playerother:button({name = "No Slow",callback = function()
+local mt = getrawmetatable(game)
+local backup
+backup = hookfunction(mt.__newindex, newcclosure(function(self, key, value)
+if key == "WalkSpeed" and value < 16 then
+value = 16
+end
+return backup(self, key, value)
+end))
+end})
+
+playerantis:button({name = "Anti-Lock (n)",callback = function()
+   getgenv().UndergroundAmount = 55
+
+local Toggled = false
+local KeyCode = 'n'
+
+if Toggled == false then
+game.StarterGui:SetCore("SendNotification", {
+                    Title = "Off",
+                    Text = "Anti-Lock is Off"
+                })
+        if Toggled == true then
+        game.StarterGui:SetCore("SendNotification", {
+                    Title = "On",
+                    Text = "Anti-Lock is On"
+                })
+        end
+end
+
+function AA1()
+game:GetService("RunService").heartbeat:Connect(function()
+    if Toggled == true then
+    local vel = game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(-30,         getgenv().UndergroundAmount,-30) 
+    game:GetService("RunService").RenderStepped:Wait()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = vel
+    end
+    end) 
+end
+
+game:GetService('UserInputService').InputBegan:Connect(function(Key)
+    if Key.KeyCode == Enum.KeyCode[KeyCode:upper()] and not game:GetService('UserInputService'):GetFocusedTextBox() then
+        if Toggled then
+            Toggled = false
+            getgenv().UndergroundAmount = 0
+            game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2.0
+                                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Off",
+                    Text = "Anti-Lock is Off"
+                })
+        elseif not Toggled then
+            Toggled = true
+            game.StarterGui:SetCore("SendNotification", {
+                    Title = "On",
+                    Text = "Anti-Lock is On"
+                })
+            while Toggled do
+            AA1()
+            getgenv().UndergroundAmount = 50
+            wait(0.5)
+            end
+        end
+    end
+end)
+end})
+
+playerantis:button({name = "Anti-Lock Resolver",callback = function()
+    pcall(function()
+    wait(0.4)
+
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Anti-Lock Resolver";
+        Text = "Fucked every anti-lock known to scripters, have fun";
+        Duration = 6;
+        Button1 = "TY!"
+    })
+end)
+      local RunService = game:GetService("RunService")
+
+RunService.Heartbeat:Connect(function()
+    pcall(function()
+        for i,v in pairs(game.Players:GetChildren()) do
+            if v.Name ~= game.Players.LocalPlayer.Name then
+                local hrp = v.Character.HumanoidRootPart
+                hrp.Velocity = Vector3.new(0, 0, 0)
+                hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)   
+            end
+        end
+    end)
+end)
+end})
+
+playerantis:toggle({name = "Anti-Stomp",def = false,callback = function(x)
+    if x == true then
+        game:GetService('RunService'):BindToRenderStep("Anti-Stomp", 0 , function()
+            if game.Players.LocalPlayer.Character.Humanoid.Health <= 10 then
+                for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                    game.Players.LocalPlayer.Character.I_LOADED_I:Destroy()
+                    wait(1.2)
+                    game.Players.LocalPlayer.Character.Head.Neck:Destroy()
+                    game.Players.LocalPlayer.Character.Head.NeckRigAttachment:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.LeftShoulderRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.RightElbowRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.LeftElbowRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.RightShoulderRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.LeftAnkleRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.NeckRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.RightKneeRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.RightAnkleRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.RightHipRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.LeftKneeRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.WaistRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.RightWristRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.LeftWristRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.RagdollConstraints.LeftHipRagdollConstraint:Destroy()
+                    game.Players.LocalPlayer.Character.LeftHand:Destroy()
+                    game.Players.LocalPlayer.Character.RightHand:Destroy()
+                    game.Players.LocalPlayer.Character.LeftLowerArm:Destroy()
+                    game.Players.LocalPlayer.Character.RightLowerArm:Destroy()
+                    game.Players.LocalPlayer.Character.LeftUpperArm:Destroy()
+                    game.Players.LocalPlayer.Character.RightUpperArm:Destroy()
+                    game.Players.LocalPlayer.Character.LeftFoot:Destroy()
+                    game.Players.LocalPlayer.Character.LeftLowerLeg:Destroy()
+                    game.Players.LocalPlayer.Character.UpperTorso:Destroy()
+                    game.Players.LocalPlayer.Character.LeftUpperLeg:Destroy()
+                    game.Players.LocalPlayer.Character.RightFoot:Destroy()
+                    game.Players.LocalPlayer.Character.RightLowerLeg:Destroy()
+                    game.Players.LocalPlayer.Character.LowerTorso:Destroy()
+                    game.Players.LocalPlayer.Character.RightUpperLeg:Destroy()
+                end
+                for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                    if v:IsA('Accessory') then
+                        v.Handle:Destroy()
+                    end
+                end
+            end
+        end)
+    elseif x == false then
+        game:GetService('RunService'):UnbindFromRenderStep("Anti-Stomp")
+    end
+end})
+
+--VisualsTab Scripts--
+esp:button({name = "ESP (L)",callback = function()
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+local esptoggle = "l" -- toggle key
+
+
+
+
+--[Main Variables]
+
+local plrs = game["Players"]
+local rs = game["RunService"]
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local Teams = game:GetService("Teams")
+local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
+
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local CurrentCamera = workspace.CurrentCamera
+local plr = plrs.LocalPlayer
+local mouse = plr:GetMouse()
+local camera = workspace.CurrentCamera
+local worldToViewportPoint = camera.worldToViewportPoint
+local cc = Instance.new("ColorCorrectionEffect", game.Lighting)
+local blur = Instance.new("BlurEffect", game.Lighting)
+local sun = Instance.new("SunRaysEffect", game.Lighting)
+blur.Size = 0
+sun.Intensity = 0
+
+--[Optimisation Variables]
+
+local Drawingnew = Drawing.new
+local Color3fromRGB = Color3.fromRGB
+local Vector3new = Vector3.new
+local Vector2new = Vector2.new
+local mathfloor = math.floor
+local mathceil = math.ceil
+
+--[Setup Table]
+
+-- esp.enabled
+
+local esp = {
+    players = {},
+    enabled = false,
+    teamcheck = true,
+    fontsize = 17,
+    font = 2,
+    settings = {
+        name = {
+            enabled = true,
+            outline = true,
+            color = Color3fromRGB(0, 0, 0),
+            outlineColor = Color3fromRGB(255, 255, 255)
+        },
+        box = {
+            enabled = true,
+            outline = true,
+            color = Color3fromRGB(0, 0, 0),
+            outlineColor = Color3fromRGB(0, 0, 0)
+        },
+        healthbar = {
+            enabled = true,
+            outline = true,
+            color = Color3fromRGB(0, 0, 0),
+            outlineColor = Color3fromRGB(0, 255, 0)
+        },
+        healthtext = {
+            enabled = true,
+            outline = true,
+            color = Color3fromRGB(0, 0, 0),
+            outlineColor = Color3fromRGB(105, 105, 105)
+        },
+        distance = {
+            enabled = true,
+            outline = true,
+            color = Color3fromRGB(0, 0, 0),
+            outlineColor = Color3fromRGB(255, 255, 255)
+        }
+    }
+}
+
+esp.NewDrawing = function(type, properties)
+    local newDrawing = Drawingnew(type)
+
+    for i, v in next, properties or {} do
+        newDrawing[i] = v
+    end
+
+    return newDrawing
+end
+
+esp.NewPlayer = function(v)
+    esp.players[v] = {
+        name = esp.NewDrawing(
+            "Text",
+            {Color = Color3fromRGB(94, 0, 255), Outline = true, Center = true, Size = 13, Font = 0}
+        ),
+        boxOutline = esp.NewDrawing("Square", {Color = Color3fromRGB(0, 0, 0), Thickness = 3}),
+        box = esp.NewDrawing("Square", {Color = Color3fromRGB(108, 11, 204), Thickness = 1}),
+        healthBarOutline = esp.NewDrawing("Line", {Color = Color3fromRGB(0, 0, 0), Thickness = 3}),
+        healthBar = esp.NewDrawing("Line", {Color = Color3fromRGB(255, 255, 255), Thickness = 1}),
+        healthText = esp.NewDrawing(
+            "Text",
+            {Color = Color3fromRGB(94, 0, 255), Outline = true, Center = true, Size = 13, Font = 0}
+        ),
+        distance = esp.NewDrawing(
+            "Text",
+            {Color = Color3fromRGB(94, 0, 255), Outline = true, Center = true, Size = 13, Font = 0}
+        )
+    }
+end
+
+for _, v in ipairs(plrs:GetPlayers()) do
+    esp.NewPlayer(v)
+end
+
+plrs.PlayerAdded:Connect(
+    function(v)
+        esp.NewPlayer(v)
+    end
+)
+
+plrs.PlayerRemoving:Connect(
+    function(v)
+        for i, v in pairs(esp.players[v]) do
+            v:Remove()
+        end
+        esp.players[v] = nil
+    end
+)
+
+local mainLoop =
+    rs.RenderStepped:Connect(
+    function()
+        for i, v in pairs(esp.players) do
+            if
+                i ~= plr and i.Character and i.Character:FindFirstChild("Humanoid") and
+                    i.Character:FindFirstChild("HumanoidRootPart") and
+                    i.Character:FindFirstChild("Head")
+             then
+                local hum = i.Character.Humanoid
+                local hrp = i.Character.HumanoidRootPart
+                local head = i.Character.Head
+
+                local Vector, onScreen = camera:WorldToViewportPoint(i.Character.HumanoidRootPart.Position)
+
+                local Size =
+                    (camera:WorldToViewportPoint(hrp.Position - Vector3new(0, 3, 0)).Y -
+                    camera:WorldToViewportPoint(hrp.Position + Vector3new(0, 2.6, 0)).Y) /
+                    2
+                local BoxSize = Vector2new(mathfloor(Size * 1.5), mathfloor(Size * 1.9))
+                local BoxPos = Vector2new(mathfloor(Vector.X - Size * 1.5 / 2), mathfloor(Vector.Y - Size * 1.6 / 2))
+
+                local BottomOffset = BoxSize.Y + BoxPos.Y + 1
+
+                if onScreen and esp.enabled then
+                    if esp.settings.name.enabled then
+                        v.name.Position = Vector2new(BoxSize.X / 2 + BoxPos.X, BoxPos.Y - 16)
+                        v.name.Outline = esp.settings.name.outline
+                        v.name.Text = tostring(i)
+                        v.name.Color = esp.settings.name.color
+                        v.name.OutlineColor = esp.settings.name.outlineColor
+                        v.name.Font = esp.font
+                        v.name.Size = esp.fontsize
+
+                        v.name.Visible = true
+                    else
+                        v.name.Visible = false
+                    end
+
+                    if
+                        esp.settings.distance.enabled and plr.Character and
+                            plr.Character:FindFirstChild("HumanoidRootPart")
+                     then
+                        v.distance.Position = Vector2new(BoxSize.X / 2 + BoxPos.X, BottomOffset)
+                        v.distance.Outline = esp.settings.distance.outline
+                        v.distance.Text =
+                            "[" .. mathfloor((hrp.Position - plr.Character.HumanoidRootPart.Position).Magnitude) .. "m]"
+                        v.distance.Color = esp.settings.distance.color
+                        v.distance.OutlineColor = esp.settings.distance.outlineColor
+                        BottomOffset = BottomOffset + 15
+
+                        v.distance.Font = esp.font
+                        v.distance.Size = esp.fontsize
+
+                        v.distance.Visible = true
+                    else
+                        v.distance.Visible = false
+                    end
+
+                    if esp.settings.box.enabled then
+                        v.boxOutline.Size = BoxSize
+                        v.boxOutline.Position = BoxPos
+                        v.boxOutline.Visible = esp.settings.box.outline
+                        v.boxOutline.Color = esp.settings.box.outlineColor
+
+                        v.box.Size = BoxSize
+                        v.box.Position = BoxPos
+                        v.box.Color = esp.settings.box.color
+                        v.box.Visible = true
+                    else
+                        v.boxOutline.Visible = false
+                        v.box.Visible = false
+                    end
+
+                    if esp.settings.healthbar.enabled then
+                        v.healthBar.From = Vector2new((BoxPos.X - 5), BoxPos.Y + BoxSize.Y)
+                        v.healthBar.To =
+                            Vector2new(
+                            v.healthBar.From.X,
+                            v.healthBar.From.Y - (hum.Health / hum.MaxHealth) * BoxSize.Y
+                        )
+                        v.healthBar.Color = esp.settings.healthbar.color
+                        v.healthBar.Visible = true
+
+                        v.healthBarOutline.From = Vector2new(v.healthBar.From.X, BoxPos.Y + BoxSize.Y + 1)
+                        v.healthBarOutline.To = Vector2new(v.healthBar.From.X, (v.healthBar.From.Y - 1 * BoxSize.Y) - 1)
+                        v.healthBarOutline.Color = esp.settings.healthbar.outlineColor
+                        v.healthBarOutline.Visible = esp.settings.healthbar.outline
+                    else
+                        v.healthBarOutline.Visible = false
+                        v.healthBar.Visible = false
+                    end
+
+                    if esp.settings.healthtext.enabled then
+                        v.healthText.Text = tostring(mathfloor((hum.Health / hum.MaxHealth) * 100 + 0.5))
+                        v.healthText.Position = Vector2new((BoxPos.X - 20), (BoxPos.Y + BoxSize.Y - 1 * BoxSize.Y) - 1)
+                        v.healthText.Color = esp.settings.healthtext.color
+                        v.healthText.OutlineColor = esp.settings.healthtext.outlineColor
+                        v.healthText.Outline = esp.settings.healthtext.outline
+
+                        v.healthText.Font = esp.font
+                        v.healthText.Size = esp.fontsize
+
+                        v.healthText.Visible = true
+                    else
+                        v.healthText.Visible = false
+                    end
+
+                    if esp.teamcheck then
+                        if v.TeamColor ~= plr.TeamColor then
+                            v.name.Visible = esp.settings.name.enabled
+                            v.box.Visible = esp.settings.box.enabled
+                            v.healthBar.Visible = esp.settings.healthbar.enabled
+                            v.healthText.Visible = esp.settings.healthtext.enabled
+                            v.distance.Visible = esp.settings.distance.enabled
+                        else
+                            v.name.Visible = false
+                            v.boxOutline.Visible = false
+                            v.box.Visible = false
+                            v.healthBarOutline.Visible = false
+                            v.healthBar.Visible = false
+                            v.healthText.Visible = false
+                            v.distance.Visible = false
+                        end
+                    end
+                else
+                    v.name.Visible = false
+                    v.boxOutline.Visible = false
+                    v.box.Visible = false
+                    v.healthBarOutline.Visible = false
+                    v.healthBar.Visible = false
+                    v.healthText.Visible = false
+                    v.distance.Visible = false
+                end
+            else
+                v.name.Visible = false
+                v.boxOutline.Visible = false
+                v.box.Visible = false
+                v.healthBarOutline.Visible = false
+                v.healthBar.Visible = false
+                v.healthText.Visible = false
+                v.distance.Visible = false
+            end
+        end
+    end
+)
+
+getgenv().esp = esp
+--esp
+
+
+local mouse = game.Players.LocalPlayer:GetMouse()
+
+
+
+mouse.KeyDown:Connect(function(value)
+if value == esptoggle then
+if esp.enabled == true then
+	esp.enabled = false
+else
+	esp.enabled = true
+end
+end
+end)
+end})
+
+esp:slider({name = "FOV",def = 70, max = 120,min = 70,rounding = true,ticking = false,measuring = "",callback = function(value)
+    game:GetService("Players").LocalPlayer.PlayerGui.MainScreenGui.MAINHUD.SettingsFrame.Settings.FOV.TextBox.Text = value
+end})
+client:button({name = "DarkChat",callback = function()
+    local player = game.Players.LocalPlayer
+
+    function D()
+        player.Information.DarkChat.Value = true
+    end
+        
+D()
+end})
+client:button({name = "Headless",callback = function()
+game.Players.LocalPlayer.Character.Head.Transparency = 1
+	game.Players.LocalPlayer.Character.Head.Transparency = 1
+	for i,v in pairs(game.Players.LocalPlayer.Character.Head:GetChildren()) do
+		if (v:IsA("Decal")) then
+			v.Transparency = 1
+		end
+	end
+end})
+client:button({name = "Korblox",callback = function()
+	local ply = game.Players.LocalPlayer
+	local chr = ply.Character
+	chr.RightLowerLeg.MeshId = "902942093"
+	chr.RightLowerLeg.Transparency = "1"
+	chr.RightUpperLeg.MeshId = "http://www.roblox.com/asset/?id=902942096"
+	chr.RightUpperLeg.TextureID = "http://roblox.com/asset/?id=902843398"
+	chr.RightFoot.MeshId = "902942089"
+	chr.RightFoot.Transparency = "1"
+end})
+--MiscTab--
+
+misc1:button({name = "Armor",callback = function(x)
+local p1 = game.Players.LocalPlayer.Character.HumanoidRootPart
+local item0 = "[High Armor] - $550"
+local pos = p1.CFrame
+getgenv().armor = true 
+
+game:GetService("RunService").heartbeat:Connect(function()
+    if getgenv().armor == true then 
+    local abc = game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0,-1000,0)
+    game:GetService("RunService").RenderStepped:Wait()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = abc
+    end
+end)
+
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.5
+wait(0.5)
+game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-1229.43945, 333.783966, -514.504639, 0.15644598, -6.56401025e-05, -0.987686574, 6.56401025e-05, 1, -5.60612789e-05, 0.987686574, -5.60612789e-05, 0.15644598)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Armor["[High Armor] - $550"].Head.CFrame * CFrame.new(0,-5,0)
+wait(0.3)
+fireclickdetector(game:GetService("Workspace").Ignored.Shop.Armor["[High Armor] - $550"].ClickDetector)
+
+wait(0.4)
+p1.CFrame = pos
+
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2
+wait(0.5)
+getgenv().armor = false
+end})
+
+misc1:button({name = "DB, REV, food",callback = function()
+local p1 = game.Players.LocalPlayer.Character.HumanoidRootPart
+local item1 = "[Double Barrel SG] - $800"
+local pos = p1.CFrame
+
+getgenv().other = true 
+
+game:GetService("RunService").heartbeat:Connect(function()
+    if getgenv().other == true then 
+    local abc = game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0,-1000,0)
+    game:GetService("RunService").RenderStepped:Wait()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = abc
+    end
+end)
+
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.5
+wait(0.5)
+game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-1013.24921, 327.755249, -51.5214233, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Guns["[Double Barrel SG] - $800"].Head.CFrame * CFrame.new(0,-1,0)
+wait(0.3)
+
+fireclickdetector(game:GetService("Workspace").Ignored.Shop.Guns["[Double Barrel SG] - $800"].ClickDetector)
+wait(0.4)
+
+p1.CFrame = pos
+
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2
+wait(0.5)
+getgenv().other = false
+wait(1)
+
+local item2 = "[Revolver] - $1600"
+getgenv().other = true
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.5
+wait(0.5)
+game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-614.686096, 327.748352, 85.671936, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Guns["[Revolver] - $1600"].Head.CFrame * CFrame.new(0,-1,0)
+wait(0.3)
+
+fireclickdetector(game:GetService("Workspace").Ignored.Shop.Guns["[Revolver] - $1600"].ClickDetector)
+wait(0.4)
+p1.CFrame = pos
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2
+wait(0.5)
+getgenv().other = false
+
+wait(1)
+
+local item3 = "[Hamburger] - $5"
+getgenv().other = true
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.5
+wait(0.5)
+game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-260.709961, 328.648071, -604.193481, -1, 0, 0, 0, 1, 0, 0, 0, -1)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Others["[Hamburger] - $5"].Head.CFrame * CFrame.new(0,-1,0)
+wait(0.3)
+
+fireclickdetector(game:GetService("Workspace").Ignored.Shop.Others["[Hamburger] - $5"].ClickDetector)
+wait(0.4)
+
+p1.CFrame = pos
+
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2
+wait(0.5)
+getgenv().other = false
+end})
+
+misc1:button({name = "XMB, SMG, food",callback = function()
+local p1 = game.Players.LocalPlayer.Character.HumanoidRootPart
+local item1 = "[XM8] - $5550"
+local pos = p1.CFrame
+
+getgenv().other2 = true 
+
+game:GetService("RunService").heartbeat:Connect(function()
+    if getgenv().other2 == true then 
+    local abc = game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0,-1000,0)
+    game:GetService("RunService").RenderStepped:Wait()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = abc
+    end
+end)
+
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.5
+wait(0.5)
+game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-987.985352, 354.130219, -116.49482, 0, 0, 1, 0, 1, -0, -1, 0, 0)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Guns["[XM8] - $5550"].Head.CFrame * CFrame.new(0,-1,0)
+wait(0.3)
+
+fireclickdetector(game:GetService("Workspace").Ignored.Shop.Guns["[XM8] - $5550"].ClickDetector)
+wait(0.4)
+
+p1.CFrame = pos
+
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2
+wait(0.5)
+getgenv().other2 = false
+wait(1)
+
+local item2 = "[SMG] - $700"
+getgenv().other2 = true
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.5
+wait(0.5)
+game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-552.491211, 314.313049, -513.74585, -1, 0, 0, 0, 1, 0, 0, 0, -1)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Guns["[SMG] - $700"].Head.CFrame * CFrame.new(0,-1,0)
+wait(0.3)
+
+fireclickdetector(game:GetService("Workspace").Ignored.Shop.Guns["[SMG] - $700"].ClickDetector)
+wait(0.4)
+p1.CFrame = pos
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2
+wait(0.5)
+getgenv().other2 = false
+
+wait(1)
+
+local item3 = "[Hamburger] - $5"
+getgenv().other2 = true
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 1.5
+wait(0.5)
+game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(-295.636627, 333.13089, -88.8177109, 0, 0, 1, 0, 1, -0, -1, 0, 0)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Ignored.Shop.Others["[Chicken] - $5"].Head.CFrame * CFrame.new(0,-1,0)
+wait(0.3)
+
+fireclickdetector(game:GetService("Workspace").Ignored.Shop.Others["[Chicken] - $5"].ClickDetector)
+wait(0.4)
+
+p1.CFrame = pos
+
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = 2
+wait(0.5)
+getgenv().other2 = false
+end})
+
+local tagtable = {}
+
+for i,v in pairs(game:GetService("ReplicatedStorage").TagText:GetChildren()) do
+        table.insert(tagtable,v.Name)
+end
+
+misc2:dropdown({name = "Streak Tag Changer",def = "",max = 10,options = tagtable,callback = function(value)
+       game:GetService("Players").LocalPlayer.Information.Tag.Value = value
+end})
+
+misc2:slider({name = "Change streaks",def = 1, max = 5000,min = 1,rounding = true,ticking = false,measuring = "",callback = function(value)
+    game:GetService("Players").LocalPlayer.Information.Streaks.Value = value
+end})
+
+misc3:button({name = "Remove Fog",callback = function()
+    game.Lighting.FogEnd = 999999
+    game.Lighting.GlobalShadows = false
+    game.Lighting.Sky:Destroy()
+    game.Lighting.DepthOfField:Destroy()
+    game.Lighting.ColorCorrection:Destroy()
+end})
+
+misc3:button({name = "Low GFX",callback = function()
+    for _,v in pairs(workspace:GetDescendants()) do
+if v.ClassName == "Part"
+or v.ClassName == "SpawnLocation"
+or v.ClassName == "WedgePart"
+or v.ClassName == "Terrain"
+or v.ClassName == "MeshPart" then
+v.Material = "Plastic"
+end
+end
+end})
+
+misc3:button({name = "Turn off annoying Christmas music",callback = function()
+game:GetService("Workspace").Radio["Jingle Bells"].Playing = false
+game:GetService("Workspace").Radio.ParticleEmitter.Enabled = false
+end})
+
+--SettingsTab Scripts--
+
+ui:keybind({name = "set ui keybind",def = nil,callback = function(key)
+   window.key = key
+end})
+
+Configs:slider({name = "rate script 1-100",def = 1, max = 100,min = 1,rounding = true,ticking = false,measuring = "",callback = function(value)
+    --Nothing--
+end})
+
+discord:button({name = "Leave feedback in the discord",callback = function()
+warn('the hell')
+end})
+discord:button({name = "Copy Discord Invite",callback = function()
+setclipboard("https://discord.gg/Z8ysaE62Fw")
+end})
+end
