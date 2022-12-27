@@ -1122,5 +1122,5 @@ end
 end
 
 if getgenv().Obfuscater == false then
-warn("--Obfuscater turned off script will not work--")
+game.Players.LocalPlayer:Kick('You turned off the obfuscater dumbass')
 end
